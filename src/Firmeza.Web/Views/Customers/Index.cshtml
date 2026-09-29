@@ -1,0 +1,10 @@
+@model IReadOnlyList<Customer>
+@{ ViewData["Title"] = "Clientes"; }
+<div class="page-heading"><div><div class="eyebrow">Relaciones</div><h1>Clientes</h1><p>Consulta y administra la información de tus clientes.</p></div><a class="btn btn-primary" asp-action="Create">＋ &nbsp; Agregar cliente</a></div>
+<form class="toolbar" method="get"><div class="search-form"><input class="form-control" type="search" name="search" value="@ViewBag.Search" placeholder="Buscar por nombre o documento…"/><button class="btn btn-outline-secondary" type="submit">Buscar</button></div><span class="ms-auto text-secondary small">@Model.Count cliente(s)</span></form>
+<section class="panel-card">
+@if (Model.Count == 0) { <div class="empty-state"><span class="metric-icon mx-auto">♙</span><strong>No hay clientes para mostrar</strong><span>Prueba otra búsqueda o registra el primer cliente.</span></div> }
+else { <div class="table-responsive"><table class="table"><thead><tr><th>Cliente</th><th>Documento</th><th>Contacto</th><th>Fecha de registro</th><th></th></tr></thead><tbody>
+@foreach (var customer in Model) { <tr><td><span class="table-name">@customer.FullName</span><span class="table-sub">@(customer.Address ?? "Sin dirección registrada")</span></td><td>@customer.DocumentType<br/><span class="table-sub">@customer.DocumentNumber</span></td><td>@(customer.Email ?? "—")<span class="table-sub">@(customer.Phone ?? "Sin teléfono")</span></td><td>@customer.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</td><td><div class="actions"><a class="action-link" asp-action="Edit" asp-route-id="@customer.Id">Editar</a><a class="action-link danger" asp-action="Delete" asp-route-id="@customer.Id">Eliminar</a></div></td></tr> }
+</tbody></table></div> }
+</section>

@@ -1,0 +1,5 @@
+@model ProductFormViewModel
+@{ ViewData["Title"] = "Nuevo producto"; }
+<div class="page-heading"><div><div class="eyebrow">Catálogo / Nuevo</div><h1>Agregar producto</h1><p>Completa los datos del material que deseas registrar.</p></div><a asp-action="Index" class="btn btn-outline-secondary">← Volver</a></div>
+<div class="form-card"><h2>Información del producto</h2><form asp-action="Create" method="post"><partial name="_Form" model="Model"/><div class="form-actions"><button class="btn btn-primary" type="submit">Guardar producto</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div></form></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

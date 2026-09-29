@@ -1,0 +1,10 @@
+@model IReadOnlyList<Sale>
+@{ ViewData["Title"] = "Ventas"; }
+<div class="page-heading"><div><div class="eyebrow">Operaciones</div><h1>Ventas</h1><p>Consulta pedidos e ingresos registrados en el sistema.</p></div><a class="btn btn-primary" asp-action="Create">＋ &nbsp; Registrar venta</a></div>
+<form class="toolbar" method="get"><div class="search-form"><select class="form-select" name="status" style="max-width:220px"><option value="">Todos los estados</option><option selected="@(ViewBag.Status as string == "Pendiente")">Pendiente</option><option selected="@(ViewBag.Status as string == "Completada")">Completada</option><option selected="@(ViewBag.Status as string == "Cancelada")">Cancelada</option></select><button class="btn btn-outline-secondary" type="submit">Filtrar</button></div><span class="ms-auto text-secondary small">@Model.Count venta(s)</span></form>
+<section class="panel-card">
+@if (Model.Count == 0) { <div class="empty-state"><span class="metric-icon mx-auto">↗</span><strong>Aún no hay ventas</strong><span>Los pedidos aparecerán cuando el canal de ventas los registre.</span></div> }
+else { <div class="table-responsive"><table class="table"><thead><tr><th>Orden</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th class="text-end">Total</th><th></th></tr></thead><tbody>
+@foreach (var sale in Model) { <tr><td class="table-name">#@sale.Id.ToString("D5")</td><td>@sale.Customer.FullName</td><td>@sale.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td><td><span class="@(sale.Status == "Completada" ? "badge-soft" : sale.Status == "Pendiente" ? "badge-soft badge-warn" : "badge-soft badge-muted")">@sale.Status</span></td><td class="text-end sale-total">$@sale.Total.ToString("N2")</td><td><div class="actions"><a class="action-link" asp-action="Details" asp-route-id="@sale.Id">Detalle</a></div></td></tr> }
+</tbody></table></div> }
+</section>

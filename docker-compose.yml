@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: firmeza-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: firmeza
+      POSTGRES_USER: firmeza
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-firmeza_local_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - firmeza-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U firmeza -d firmeza"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: src/Firmeza.Web/Dockerfile
+    container_name: firmeza-web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=firmeza;Username=firmeza;Password=${POSTGRES_PASSWORD:-firmeza_local_dev}
+      AdminSeed__Email: ${ADMIN_EMAIL:-admin@firmeza.local}
+      AdminSeed__Password: ${ADMIN_PASSWORD:-ChangeMe123!}
+      TaxRate: ${TAX_RATE:-0.15}
+      EPPlus__LicenseContext: ${EPPLUS_LICENSE_CONTEXT:-NonCommercial}
+    ports:
+      - "5080:8080"
+    volumes:
+      - firmeza-receipts:/app/wwwroot/recibos
+
+volumes:
+  firmeza-postgres:
+  firmeza-receipts:

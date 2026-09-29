@@ -1,0 +1,70 @@
+@model SaleCreateViewModel
+@{
+    ViewData["Title"] = "Nueva venta";
+    var customers = (IReadOnlyList<Customer>)ViewBag.Customers;
+    var products = (IReadOnlyList<Product>)ViewBag.Products;
+}
+<div class="page-heading"><div><div class="eyebrow">Ventas / Nuevo</div><h1>Registrar venta</h1><p>Registra el pedido, actualiza el inventario y genera su recibo PDF.</p></div><a asp-action="Index" class="btn btn-outline-secondary">← Volver</a></div>
+<div class="form-card"><div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<form asp-action="Create" method="post" id="sale-form">
+    <div class="mb-4"><label asp-for="CustomerId" class="form-label"></label><select asp-for="CustomerId" class="form-select"><option value="">Selecciona un cliente…</option>@foreach (var customer in customers) { <option value="@customer.Id">@customer.FullName · @customer.DocumentNumber</option> }</select><span asp-validation-for="CustomerId" class="text-danger"></span></div>
+    <div class="d-flex align-items-center justify-content-between mb-2"><h2 class="mb-0">Productos</h2><button class="btn btn-outline-secondary" id="add-sale-line" type="button">＋ Agregar producto</button></div>
+    <div id="sale-lines">
+        @for (var i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="row g-2 align-items-end sale-line mb-2">
+                <div class="col-md-8"><label class="form-label">Producto</label><select name="Items[@i].ProductId" class="form-select product-select"><option value="">Selecciona un producto…</option>@foreach (var product in products) { <option value="@product.Id" data-price="@product.UnitPrice" data-stock="@product.Stock" selected="@(Model.Items[i].ProductId == product.Id)">@product.Name · @product.Sku · $@product.UnitPrice.ToString("N2") (disp. @product.Stock)</option> }</select></div>
+                <div class="col-md-3"><label class="form-label">Cantidad</label><input name="Items[@i].Quantity" type="number" min="1" max="100000" step="1" value="@Model.Items[i].Quantity" class="form-control quantity-input"/></div>
+                <div class="col-md-1"><button class="btn btn-outline-secondary remove-line" type="button" title="Quitar">×</button></div>
+            </div>
+        }
+    </div>
+    <div class="sale-totals-box mt-4 ms-auto" style="max-width:320px"><div class="d-flex justify-content-between py-1"><span>Subtotal estimado</span><strong id="sale-subtotal">$0.00</strong></div><div class="d-flex justify-content-between py-1"><span>IVA (@((ViewBag.TaxRate * 100).ToString("0.##"))%)</span><strong id="sale-tax">$0.00</strong></div><div class="d-flex justify-content-between border-top mt-2 pt-2 fs-6"><strong>Total</strong><strong id="sale-total">$0.00</strong></div></div>
+    <p class="form-text mt-3">El precio se toma del catálogo. Al confirmar, las existencias se descuentan y se crea un recibo descargable.</p>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Registrar venta y generar recibo</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div>
+</form></div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const lines = document.getElementById('sale-lines');
+            const taxRate = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((decimal)(ViewBag.TaxRate ?? 0.15m)));
+            const options = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(products.Select(product => new { product.Id, product.Name, product.Sku, product.UnitPrice, product.Stock })));
+            function updateNames() {
+                [...lines.querySelectorAll('.sale-line')].forEach((line, index) => {
+                    line.querySelector('.product-select').name = `Items[${index}].ProductId`;
+                    line.querySelector('.quantity-input').name = `Items[${index}].Quantity`;
+                });
+                calculate();
+            }
+            function calculate() {
+                let subtotal = 0;
+                lines.querySelectorAll('.sale-line').forEach(line => {
+                    const select = line.querySelector('.product-select');
+                    const option = select.selectedOptions[0];
+                    const quantity = Number(line.querySelector('.quantity-input').value || 0);
+                    const product = options.find(item => String(item.id) === select.value);
+                    if (product && quantity > 0) subtotal += Number(product.unitPrice) * quantity;
+                });
+                const tax = Math.round(subtotal * taxRate * 100) / 100;
+                document.getElementById('sale-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+                document.getElementById('sale-tax').textContent = `$${tax.toFixed(2)}`;
+                document.getElementById('sale-total').textContent = `$${(subtotal + tax).toFixed(2)}`;
+            }
+            document.getElementById('add-sale-line').addEventListener('click', () => {
+                const line = document.createElement('div');
+                line.className = 'row g-2 align-items-end sale-line mb-2';
+                const select = document.createElement('select'); select.className = 'form-select product-select'; select.innerHTML = '<option value="">Selecciona un producto…</option>';
+                options.forEach(product => { const option = document.createElement('option'); option.value = product.id; option.textContent = `${product.name} · ${product.sku} · $${Number(product.unitPrice).toFixed(2)} (disp. ${product.stock})`; select.append(option); });
+                const productCol = document.createElement('div'); productCol.className = 'col-md-8'; productCol.innerHTML = '<label class="form-label">Producto</label>'; productCol.append(select);
+                const quantityCol = document.createElement('div'); quantityCol.className = 'col-md-3'; quantityCol.innerHTML = '<label class="form-label">Cantidad</label><input type="number" min="1" max="100000" step="1" value="1" class="form-control quantity-input">';
+                const removeCol = document.createElement('div'); removeCol.className = 'col-md-1'; removeCol.innerHTML = '<button class="btn btn-outline-secondary remove-line" type="button" title="Quitar">×</button>';
+                line.append(productCol, quantityCol, removeCol); lines.append(line); updateNames();
+            });
+            lines.addEventListener('input', calculate);
+            lines.addEventListener('change', calculate);
+            lines.addEventListener('click', event => { if (event.target.classList.contains('remove-line')) { if (lines.querySelectorAll('.sale-line').length > 1) event.target.closest('.sale-line').remove(); updateNames(); } });
+            updateNames();
+        })();
+    </script>
+}

@@ -1,0 +1,12 @@
+@model CustomerFormViewModel
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div><input asp-for="Id" type="hidden" />
+<div class="row g-3">
+    <div class="col-md-6"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control"/><span asp-validation-for="FirstName" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control"/><span asp-validation-for="LastName" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="DocumentType" class="form-label"></label><select asp-for="DocumentType" class="form-select"><option>Cédula</option><option>RUC</option><option>Pasaporte</option><option>Otro</option></select><span asp-validation-for="DocumentType" class="text-danger"></span></div>
+    <div class="col-md-8"><label asp-for="DocumentNumber" class="form-label"></label><input asp-for="DocumentNumber" class="form-control"/><span asp-validation-for="DocumentNumber" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" type="email"/><span asp-validation-for="Email" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="Phone" class="form-label"></label><input asp-for="Phone" class="form-control" type="tel"/><span asp-validation-for="Phone" class="text-danger"></span></div>
+    <div class="col-md-8"><label asp-for="Address" class="form-label"></label><input asp-for="Address" class="form-control"/><span asp-validation-for="Address" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Age" class="form-label"></label><input asp-for="Age" class="form-control" type="number" min="18" max="120" step="1"/><div class="form-text">Deja en blanco si no aplica.</div><span asp-validation-for="Age" class="text-danger"></span></div>
+</div>

@@ -1,0 +1,4 @@
+@model Customer
+@{ ViewData["Title"] = "Eliminar cliente"; }
+<div class="page-heading"><div><div class="eyebrow">Clientes / Eliminar</div><h1>Eliminar cliente</h1><p>La operación se rechazará si el cliente tiene ventas asociadas.</p></div><a asp-action="Index" class="btn btn-outline-secondary">← Volver</a></div>
+<div class="form-card"><h2>¿Eliminar este registro?</h2><p><strong>@Model.FullName</strong></p><p class="text-secondary">@Model.DocumentType @Model.DocumentNumber · @(Model.Email ?? "Sin correo")</p><form asp-action="Delete" asp-route-id="@Model.Id" method="post"><div class="form-actions"><button class="btn btn-danger" type="submit">Sí, eliminar cliente</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div></form></div>

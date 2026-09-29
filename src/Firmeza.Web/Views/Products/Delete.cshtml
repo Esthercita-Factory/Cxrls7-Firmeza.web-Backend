@@ -1,0 +1,4 @@
+@model Product
+@{ ViewData["Title"] = "Eliminar producto"; }
+<div class="page-heading"><div><div class="eyebrow">Catálogo / Eliminar</div><h1>Retirar producto</h1><p>El producto se ocultará del catálogo, pero conservará el historial de ventas.</p></div><a asp-action="Index" class="btn btn-outline-secondary">← Volver</a></div>
+<div class="form-card"><h2>¿Retirar este producto?</h2><p><strong>@Model.Name</strong> <span class="text-secondary">(@Model.Sku)</span></p><p class="text-secondary">@Model.Category · $@Model.UnitPrice.ToString("N2") · Stock @Model.Stock</p><form asp-action="Delete" asp-route-id="@Model.Id" method="post"><div class="form-actions"><button class="btn btn-danger" type="submit">Sí, retirar producto</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div></form></div>

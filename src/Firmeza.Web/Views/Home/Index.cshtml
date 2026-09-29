@@ -1,0 +1,30 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Resumen";
+}
+<div class="page-heading">
+    <div><div class="eyebrow">Visión general</div><h1>Buenos días, equipo.</h1><p>Un vistazo al movimiento de tu negocio hoy.</p></div>
+    <a class="btn btn-primary" asp-controller="Products" asp-action="Create">＋ &nbsp; Nuevo producto</a>
+</div>
+<div class="metric-grid">
+    <article class="metric-card"><div class="metric-head"><span>Productos activos</span><span class="metric-icon">▦</span></div><div class="metric-value">@Model.ProductCount.ToString("N0")</div><div class="metric-foot">En el catálogo</div></article>
+    <article class="metric-card"><div class="metric-head"><span>Clientes</span><span class="metric-icon">♙</span></div><div class="metric-value">@Model.CustomerCount.ToString("N0")</div><div class="metric-foot">Contactos registrados</div></article>
+    <article class="metric-card"><div class="metric-head"><span>Ventas totales</span><span class="metric-icon">↗</span></div><div class="metric-value">@Model.SaleCount.ToString("N0")</div><div class="metric-foot">Órdenes en el sistema</div></article>
+    <article class="metric-card"><div class="metric-head"><span>Ingresos de hoy</span><span class="metric-icon">$</span></div><div class="metric-value">$@Model.TodayRevenue.ToString("N0")</div><div class="metric-foot">Ventas registradas hoy</div></article>
+</div>
+<section class="panel-card">
+    <div class="panel-header"><h2>Actividad reciente</h2><a asp-controller="Sales" asp-action="Index">Ver todas las ventas →</a></div>
+    @if (Model.RecentSales.Count == 0)
+    {
+        <div class="empty-state"><span class="metric-icon mx-auto">↗</span><strong>Aún no hay ventas</strong><span>Las ventas aparecerán aquí cuando se registren.</span></div>
+    }
+    else
+    {
+        <div class="table-responsive"><table class="table"><thead><tr><th>Orden</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th class="text-end">Total</th></tr></thead><tbody>
+        @foreach (var sale in Model.RecentSales)
+        {
+            <tr><td><a class="table-name text-decoration-none" asp-controller="Sales" asp-action="Details" asp-route-id="@sale.Id">#@sale.Id.ToString("D5")</a></td><td>@sale.Customer.FullName</td><td>@sale.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td><td><span class="badge-soft">@sale.Status</span></td><td class="text-end sale-total">$@sale.Total.ToString("N2")</td></tr>
+        }
+        </tbody></table></div>
+    }
+</section>
