@@ -1,0 +1,5 @@
+@model CustomerFormViewModel
+@{ ViewData["Title"] = "Nuevo cliente"; }
+<div class="page-heading"><div><div class="eyebrow">Clientes / Nuevo</div><h1>Agregar cliente</h1><p>Registra la información de contacto y facturación.</p></div><a asp-action="Index" class="btn btn-outline-secondary">← Volver</a></div>
+<div class="form-card"><h2>Información del cliente</h2><form asp-action="Create" method="post"><partial name="_Form" model="Model"/><div class="form-actions"><button class="btn btn-primary" type="submit">Guardar cliente</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div></form></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

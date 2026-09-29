@@ -1,0 +1,25 @@
+@model ReportsPageViewModel
+@{
+    ViewData["Title"] = "Importar y exportar";
+    var result = Model.ImportResult;
+}
+<div class="page-heading"><div><div class="eyebrow">Herramientas de datos</div><h1>Importar y exportar</h1><p>Actualiza el negocio en lote y descarga informes para tus registros.</p></div></div>
+@if (!ViewData.ModelState.IsValid) { <div asp-validation-summary="All" class="alert alert-danger"></div> }
+@if (result is not null)
+{
+    <section class="panel-card mb-4"><div class="panel-header"><h2>Resultado de la importación</h2><span class="badge-soft">@result.SuccessfulRows cambios</span></div>
+        <div class="p-3"><div class="import-summary-grid"><div><strong>@result.ProductsCreated</strong><span>Productos nuevos</span></div><div><strong>@result.ProductsUpdated</strong><span>Productos actualizados</span></div><div><strong>@result.CustomersCreated</strong><span>Clientes nuevos</span></div><div><strong>@result.CustomersUpdated</strong><span>Clientes actualizados</span></div><div><strong>@result.SalesCreated</strong><span>Ventas importadas</span></div><div><strong>@result.Issues.Count</strong><span>Inconsistencias</span></div></div>
+        @if (result.Issues.Count > 0) { <div class="d-flex justify-content-between align-items-center mt-4 mb-2"><strong>Filas que requieren revisión</strong><a class="action-link" asp-action="DownloadImportLog" asp-route-token="@Model.LogToken">↓ Descargar log CSV</a></div><div class="table-responsive import-issues"><table class="table"><thead><tr><th>Hoja</th><th>Fila</th><th>Inconsistencia</th></tr></thead><tbody>@foreach (var issue in result.Issues.Take(100)) { <tr><td>@issue.Worksheet</td><td>@issue.Row</td><td>@issue.Message</td></tr> }</tbody></table></div>@if (result.Issues.Count > 100) { <div class="form-text mt-2">Se muestran las primeras 100 incidencias. Descarga el CSV para consultar el log completo.</div> } }
+        else { <div class="alert alert-success mt-3 mb-0">El archivo se procesó sin inconsistencias.</div> }
+        </div>
+    </section>
+}
+<div class="report-grid">
+    <section class="panel-card report-card"><div class="panel-header"><div><div class="eyebrow mb-1">Carga inteligente</div><h2>Importar libro Excel</h2></div><span class="metric-icon">⇧</span></div><div class="report-card-body"><p>Sube un archivo .xlsx con productos, clientes y ventas combinados. Firmeza reconoce encabezados, normaliza y relaciona las filas, actualiza por SKU/documento y genera un log para revisar datos inconsistentes.</p><form asp-action="Import" method="post" enctype="multipart/form-data"><label class="form-label" for="file">Archivo Excel (.xlsx), máximo 10 MB</label><input class="form-control" id="file" name="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required/><div class="d-flex gap-2 mt-3"><button class="btn btn-primary" type="submit">Procesar archivo</button><a asp-action="Template" class="btn btn-outline-secondary">Descargar plantilla</a></div></form><div class="form-text mt-3">Cada hoja debe tener encabezados en la primera fila. SKU y documento son las claves para relacionar entidades. Para ventas incluye número de venta, documento del cliente, SKU y cantidad.</div></div></section>
+    <section class="panel-card report-card"><div class="panel-header"><div><div class="eyebrow mb-1">Descargas</div><h2>Exportar información</h2></div><span class="metric-icon">⇩</span></div><div class="report-card-body export-list">
+        <div class="export-item"><div><strong>Productos</strong><small>Catálogo e inventario</small></div><div class="d-flex gap-2"><a class="action-link" asp-action="Products" asp-route-format="xlsx">Excel</a><a class="action-link" asp-action="Products" asp-route-format="pdf">PDF</a></div></div>
+        <div class="export-item"><div><strong>Clientes</strong><small>Contactos y documentos</small></div><div class="d-flex gap-2"><a class="action-link" asp-action="Customers" asp-route-format="xlsx">Excel</a><a class="action-link" asp-action="Customers" asp-route-format="pdf">PDF</a></div></div>
+        <div class="export-item"><div><strong>Ventas</strong><small>Órdenes, IVA y totales</small></div><div class="d-flex gap-2"><a class="action-link" asp-action="Sales" asp-route-format="xlsx">Excel</a><a class="action-link" asp-action="Sales" asp-route-format="pdf">PDF</a></div></div>
+    </div></section>
+</div>
+<div class="report-note mt-3"><strong>Importante:</strong> los archivos se procesan de forma transaccional. Las filas inválidas y las ventas duplicadas se informan en el log; los cambios del catálogo y de clientes se identifican por SKU y número de documento.</div>

@@ -1,0 +1,14 @@
+@model ProductFormViewModel
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<input asp-for="Id" type="hidden" />
+<div class="row g-3">
+    <div class="col-md-6"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" placeholder="Ej. Cemento gris 50 kg"/><span asp-validation-for="Name" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="Sku" class="form-label"></label><input asp-for="Sku" class="form-control" placeholder="Ej. CEM-050"/><span asp-validation-for="Sku" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="Category" class="form-label"></label><input asp-for="Category" class="form-control" placeholder="Ej. Cementos y morteros"/><span asp-validation-for="Category" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="UnitOfMeasure" class="form-label"></label><select asp-for="UnitOfMeasure" class="form-select"><option>unidad</option><option>saco</option><option>kg</option><option>tonelada</option><option>metro</option><option>m²</option><option>m³</option><option>litro</option><option>galón</option><option>caja</option></select><span asp-validation-for="UnitOfMeasure" class="text-danger"></span></div>
+    <div class="col-12"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" class="form-control" rows="3" placeholder="Detalles opcionales del producto"></textarea><span asp-validation-for="Description" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="UnitPrice" class="form-label"></label><div class="input-group"><span class="input-group-text">$</span><input asp-for="UnitPrice" class="form-control" step="0.01" min="0.01"/><span asp-validation-for="UnitPrice" class="text-danger"></span></div></div>
+    <div class="col-md-4"><label asp-for="Stock" class="form-label"></label><input asp-for="Stock" class="form-control" min="0"/><span asp-validation-for="Stock" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="MinimumStock" class="form-label"></label><input asp-for="MinimumStock" class="form-control" min="0"/><span asp-validation-for="MinimumStock" class="text-danger"></span></div>
+    <div class="col-12"><div class="form-check"><input asp-for="IsActive" class="form-check-input"/><label asp-for="IsActive" class="form-check-label"></label></div></div>
+</div>
