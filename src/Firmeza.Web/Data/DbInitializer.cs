@@ -21,6 +21,11 @@ public static class DbInitializer
             }
         }
 
+        await EnsureAdminAsync(users, configuration);
+    }
+
+    public static async Task EnsureAdminAsync(UserManager<ApplicationUser> users, IConfiguration configuration)
+    {
         var email = configuration["AdminSeed:Email"];
         var password = configuration["AdminSeed:Password"];
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -29,10 +34,24 @@ public static class DbInitializer
         var admin = await users.FindByEmailAsync(email);
         if (admin is null)
         {
-            admin = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, FullName = "Administrador Firmeza" };
-            var result = await users.CreateAsync(admin, password);
-            if (!result.Succeeded)
-                throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
+            admin = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true,
+                FullName = "Administrador Firmeza"
+            };
+
+            var createResult = await users.CreateAsync(admin, password);
+            if (!createResult.Succeeded)
+                throw new InvalidOperationException(string.Join("; ", createResult.Errors.Select(e => e.Description)));
+        }
+        else
+        {
+            var resetToken = await users.GeneratePasswordResetTokenAsync(admin);
+            var resetResult = await users.ResetPasswordAsync(admin, resetToken, password);
+            if (!resetResult.Succeeded)
+                throw new InvalidOperationException(string.Join("; ", resetResult.Errors.Select(e => e.Description)));
         }
 
         if (!await users.IsInRoleAsync(admin, "Administrador"))

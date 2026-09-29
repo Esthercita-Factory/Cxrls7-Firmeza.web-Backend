@@ -18,11 +18,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
-        options.Password.RequiredLength = 10;
+        options.Password.RequiredLength = 6;
         options.Password.RequireDigit = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
         options.User.RequireUniqueEmail = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
