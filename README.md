@@ -1,10 +1,11 @@
 # Firmeza — Gestión administrativa
 
-Aplicación web administrativa para una empresa de comercialización y distribución de materiales de construcción. La primera entrega incluye autenticación por roles, panel Razor, CRUD de productos y clientes, consulta de ventas, persistencia PostgreSQL con Entity Framework Core y base preparada para despliegue en contenedores.
+Aplicación administrativa para una empresa de comercialización y distribución de materiales de construcción. Incluye autenticación por roles, panel Razor, API REST para un frontend Angular, CRUD de productos y clientes, consulta y registro de ventas, persistencia PostgreSQL con Entity Framework Core y base preparada para despliegue en contenedores.
 
 ## Tecnologías
 
 - .NET 8 / ASP.NET Core MVC con vistas Razor.
+- API REST protegida por ASP.NET Core Identity y cookies de autenticación.
 - ASP.NET Core Identity para usuarios, contraseñas y roles.
 - Entity Framework Core 8 y proveedor Npgsql para PostgreSQL 16.
 - Bootstrap 5.3 y estilos propios adaptables a móvil.
@@ -29,6 +30,7 @@ Firmeza.sln
 - Registro de ventas con validación de stock, descuento de existencias, IVA configurable y recibo PDF descargable.
 - Importación multitabla desde Excel con normalización de encabezados, actualización por SKU/documento, transacción e informe descargable de inconsistencias.
 - Exportación de productos, clientes y ventas a Excel y PDF desde el panel administrativo.
+- Endpoints JSON para autenticación, dashboard, productos, clientes, ventas, recibos e importación/exportación de reportes.
 - Esquema creado y actualizado exclusivamente mediante migraciones EF Core. La aplicación aplica las migraciones pendientes al iniciar.
 
 ## Requisitos
@@ -50,6 +52,8 @@ Firmeza.sln
 
 5. Abre `http://localhost:5080`. La base se migra automáticamente al arranque.
 
+El frontend Angular se ejecuta por separado en `http://localhost:4200`; su proxy de desarrollo reenvía las solicitudes `/api` a este backend. Sigue las instrucciones del README del frontend para iniciar ambos procesos.
+
 Si se agregan cambios a las entidades, crear y versionar una migración con:
 
 ```bash
@@ -69,7 +73,7 @@ Estas credenciales son únicamente para desarrollo. Sobrescribe la contraseña c
 
 ## Docker Compose
 
-Con Docker Engine y el complemento Compose instalados, desde la raíz:
+Con Docker Engine y el complemento Compose instalados, desde la raíz del backend:
 
 ```bash
 docker compose up --build
@@ -77,7 +81,7 @@ docker compose up --build
 
 Opcionalmente copia `.env.example` a `.env` y cambia las contraseñas antes de levantar los contenedores.
 
-La aplicación queda en `http://localhost:5080`, PostgreSQL en el puerto `5432`; volúmenes preservan los datos y los recibos y el servicio web espera al healthcheck de la base. Se pueden configurar `POSTGRES_PASSWORD`, `ADMIN_EMAIL` y `ADMIN_PASSWORD` en el entorno antes de levantarlo. Los valores por defecto de Compose también son exclusivos para desarrollo. Para detener: `docker compose down`; para eliminar también los volúmenes de datos: `docker compose down -v`.
+La aplicación Angular queda en `http://localhost:4200`, la API en `http://localhost:5080` y PostgreSQL de prueba en el puerto `5432`. El frontend se sirve con Nginx y envía `/api` al contenedor web. La base de datos es un contenedor local desechable para desarrollo; no se conecta a servicios externos. Volúmenes preservan los datos y recibos entre reinicios y el servicio web espera el healthcheck de PostgreSQL. Se pueden configurar `POSTGRES_PASSWORD`, `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env` antes de levantarlo. Para detener sin borrar los datos de prueba: `docker compose down`; para eliminarlos también: `docker compose down -v`.
 
 El Dockerfile usa imágenes oficiales .NET 8 y publica en modo Release.
 
@@ -88,6 +92,19 @@ dotnet test Firmeza.sln
 ```
 
 Las pruebas actuales verifican validaciones de precio/stock del producto, rango de edad del cliente, normalización de encabezados Excel y generación de PDF.
+
+## API REST
+
+Las rutas `/api` responden JSON y no redirigen a las vistas Razor cuando falta autenticación:
+
+- `GET /api/auth/csrf`, `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
+- `/api/products` y `/api/customers`: lectura, creación, edición y eliminación/desactivación.
+- `GET /api/dashboard`: indicadores del mes y transacciones recientes.
+- `/api/sales`: consulta y registro transaccional de ventas; `/api/sales/{id}/receipt` descarga el recibo.
+- `/api/reports/products`, `/api/reports/customers`, `/api/reports/sales`: exportan con `?format=xlsx` o `?format=pdf`.
+- `GET /api/reports/import/template` y `POST /api/reports/import`: plantilla e importación Excel.
+
+Todas las operaciones salvo el inicio de sesión y la obtención del token CSRF exigen una sesión con rol `Administrador`. Las solicitudes que modifican datos requieren enviar el token de `GET /api/auth/csrf` en la cabecera `X-CSRF-TOKEN`.
 
 ## Importaciones, exportaciones y recibos
 

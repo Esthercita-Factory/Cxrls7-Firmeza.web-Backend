@@ -38,6 +38,17 @@ services:
     volumes:
       - firmeza-receipts:/app/wwwroot/recibos
 
+  frontend:
+    build:
+      context: ../Cxrls7-Firmeza.web-Frontend-master
+      dockerfile: Dockerfile
+    container_name: firmeza-frontend
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "4200:80"
+
 volumes:
   firmeza-postgres:
   firmeza-receipts:
