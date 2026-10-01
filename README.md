@@ -42,7 +42,7 @@ Firmeza.sln
 
 1. Inicia PostgreSQL y crea un usuario/base de datos. No se requiere cargar scripts SQL para crear el esquema.
 2. Configura `ConnectionStrings:DefaultConnection` en `src/Firmeza.Web/appsettings.json` o, preferiblemente, sobrescribe con la variable `ConnectionStrings__DefaultConnection`.
-3. Configura el administrador inicial en `AdminSeed:Email` y `AdminSeed:Password` o mediante `AdminSeed__Email` y `AdminSeed__Password`. El valor predeterminado es solo para desarrollo; cámbialo antes de ejecutar.
+3. Antes del primer arranque, configura una contraseña segura para el administrador mediante User Secrets en desarrollo o `AdminSeed__Password` en el entorno desplegado. No hay una contraseña administrativa predeterminada; si no se configura, se crean los roles pero no una cuenta administradora.
 4. Desde la raíz del repositorio ejecuta:
 
    ```bash
@@ -51,6 +51,10 @@ Firmeza.sln
    ```
 
 5. Abre `http://localhost:5080`. La base se migra automáticamente al arranque.
+
+Para Supabase, guarda la cadena PostgreSQL en User Secrets durante el desarrollo o en el gestor de secretos del entorno desplegado; nunca la escribas en `appsettings.json` ni la subas a Git. El backend usa Npgsql, por lo que la cadena debe tener formato `Host=...;Port=...;Database=...;Username=...;Password=...;SSL Mode=Require`.
+
+La migración `LegacySupabaseBaseline` reconoce el esquema anterior de Firmeza que contiene `Customers.Name` y `Products.Price`. Si lo encuentra sin el historial inicial de EF, conserva los registros, adapta esas columnas, asigna SKU y documento `LEGACY-<Id>` cuando corresponde y crea las tablas de ASP.NET Identity. Solo se ejecuta si el historial aún no contiene ni el baseline ni la migración inicial; así los siguientes arranques no revierten migraciones posteriores. La migración se detiene con error si detecta datos incompatibles o un esquema distinto al esperado. Haz y verifica un respaldo antes de conectar una base con datos. En bases nuevas no altera tablas de negocio; la migración inicial crea el esquema normal.
 
 El frontend Angular se ejecuta por separado en `http://localhost:4200`; su proxy de desarrollo reenvía las solicitudes `/api` a este backend. Sigue las instrucciones del README del frontend para iniciar ambos procesos.
 
@@ -64,12 +68,7 @@ La migración es el registro del cambio del esquema. No se deben crear las tabla
 
 ## Usuario administrativo inicial
 
-El arranque garantiza los roles `Administrador` y `Cliente`, y si no existe la cuenta configurada en `AdminSeed`, la crea y asigna al rol Administrador. En la configuración de desarrollo actual:
-
-- Correo: `admin@firmeza.local`
-- Contraseña: `ChangeMe123!`
-
-Estas credenciales son únicamente para desarrollo. Sobrescribe la contraseña con un secreto antes de cualquier uso compartido o despliegue. Los usuarios registrados desde el formulario reciben exclusivamente el rol Cliente.
+El arranque garantiza los roles `Administrador` y `Cliente`. Si se configuran `AdminSeed:Email` y `AdminSeed:Password` y no existe esa cuenta, la crea y asigna al rol Administrador. El correo predeterminado es solo para desarrollo; no existe contraseña predeterminada. Los usuarios registrados desde el formulario reciben exclusivamente el rol Cliente.
 
 ## Docker Compose
 

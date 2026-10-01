@@ -3,6 +3,8 @@ using Firmeza.Web.Models;
 using Firmeza.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using OfficeOpenXml;
 using QuestPDF.Infrastructure;
 
@@ -87,6 +89,15 @@ app.MapControllerRoute(
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    const string legacyBaseline = "20260929190000_LegacySupabaseBaseline";
+    const string initialMigration = "20260929191805_InitialCreate";
+    var appliedMigrations = await db.Database.GetAppliedMigrationsAsync();
+    if (!appliedMigrations.Contains(legacyBaseline, StringComparer.Ordinal) &&
+        !appliedMigrations.Contains(initialMigration, StringComparer.Ordinal))
+    {
+        await db.Database.GetService<IMigrator>().MigrateAsync(legacyBaseline);
+    }
+
     await db.Database.MigrateAsync();
 }
 await DbInitializer.SeedAsync(app.Services, app.Configuration);
